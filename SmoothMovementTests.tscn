@@ -1,0 +1,83 @@
+[gd_scene load_steps=6 format=2]
+
+[ext_resource path="res://ImprovedMovement.gd" type="Script" id=1]
+
+[sub_resource type="GDScript" id=1]
+script/source = "extends Spatial
+
+# made with godot 3.2.3
+
+func _ready():
+	# to create discrepancy in process / physics
+	Engine.iterations_per_second = 8
+	Engine.target_fps = 60
+	
+	# to center window
+	# if you have a better way, I'm interested
+	var screen_size = OS.get_screen_size()
+	var window_size = OS.get_window_size()
+	OS.set_window_position(screen_size*0.5 - window_size*0.5)
+"
+
+[sub_resource type="GDScript" id=2]
+script/source = "extends KinematicBody
+
+
+var velocity = Vector3.RIGHT * 5.0
+func _physics_process(delta):
+		velocity = move_and_slide_with_snap(velocity, Vector3.DOWN, Vector3.UP, true, 1, deg2rad(45), false)
+		
+		print(\"simple \", self.translation)
+"
+
+[sub_resource type="CylinderShape" id=3]
+
+[sub_resource type="CylinderMesh" id=4]
+
+[node name="TestScene" type="Spatial"]
+script = SubResource( 1 )
+
+[node name="Simple" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0168197, -0.0147202, 0.00978971 )
+script = SubResource( 2 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Simple"]
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Simple"]
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="Improved" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.3, 0 )
+script = ExtResource( 1 )
+
+[node name="CollisionShape" type="CollisionShape" parent="Improved"]
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="Improved"]
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="Camera" type="Camera" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3622, 0, 10.2771 )
+
+[node name="obstacle1" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19.41, -3.31472, -0.719982 )
+
+[node name="CollisionShape" type="CollisionShape" parent="obstacle1"]
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="obstacle1"]
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="obstacle2" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19.41, -0.0147202, -0.719982 )
+
+[node name="CollisionShape" type="CollisionShape" parent="obstacle2"]
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="obstacle2"]
+mesh = SubResource( 4 )
+material/0 = null
