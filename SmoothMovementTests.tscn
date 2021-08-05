@@ -1,7 +1,5 @@
 [gd_scene load_steps=6 format=2]
 
-[ext_resource path="res://ImprovedMovement.gd" type="Script" id=1]
-
 [sub_resource type="GDScript" id=1]
 script/source = "extends Spatial
 
@@ -12,9 +10,14 @@ func _ready():
 	Engine.iterations_per_second = 8
 	Engine.target_fps = 60
 	
-	# to center window
-	# if you have a better way, I'm interested
-	var screen_size = OS.get_screen_size()
+	# take first window
+	OS.current_screen = 0
+	
+	# use native window size
+	var screen_size = OS.get_screen_size(0)
+	OS.set_window_size(screen_size*0.6)
+	
+	# center the window
 	var window_size = OS.get_window_size()
 	OS.set_window_position(screen_size*0.5 - window_size*0.5)
 "
@@ -34,6 +37,18 @@ func _physics_process(delta):
 
 [sub_resource type="CylinderMesh" id=4]
 
+[sub_resource type="GDScript" id=5]
+script/source = "extends ImprovedKinematicBody
+
+func _ready():
+	velocity = Vector3.RIGHT * 5.0
+
+# see ImprovedKinematicBody.gd
+func _implementMovement(delta):
+	velocity = move_and_slide_with_snap(velocity, Vector3.DOWN, Vector3.UP, true, 1, deg2rad(45), false)
+	print(\"improved \", self.translation)
+"
+
 [node name="TestScene" type="Spatial"]
 script = SubResource( 1 )
 
@@ -50,7 +65,7 @@ material/0 = null
 
 [node name="Improved" type="KinematicBody" parent="."]
 transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.3, 0 )
-script = ExtResource( 1 )
+script = SubResource( 5 )
 
 [node name="CollisionShape" type="CollisionShape" parent="Improved"]
 shape = SubResource( 3 )

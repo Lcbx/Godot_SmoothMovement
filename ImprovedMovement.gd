@@ -1,23 +1,31 @@
 extends KinematicBody
 
+class_name ImprovedKinematicBody
 
-var velocity = Vector3.RIGHT * 5.0
+var velocity : Vector3
 
-var physicsTranslation = Vector3.ZERO
-var physicsUpdate = 0
+var _physicsTranslation = Vector3.ZERO
+var _physicsUpdate = 0
+
+func _getTime():
+	return OS.get_ticks_usec() / 1000000.0
 
 func _physics_process(delta):
-	var now = OS.get_ticks_usec() / 1000000.0
-	if physicsTranslation != Vector3.ZERO:
-		self.translation = physicsTranslation 
-	velocity = move_and_slide_with_snap(velocity, Vector3.DOWN, Vector3.UP, true, 1, deg2rad(45), false)
-	physicsTranslation = self.translation
-	physicsUpdate = OS.get_ticks_usec() / 1000000.0
+	if _physicsTranslation != Vector3.ZERO:
+		self.translation = _physicsTranslation 
 	
-	print("improved ", self.translation)
+	_implementMovement(delta)
+	
+	_physicsTranslation = self.translation
+	_physicsUpdate = _getTime()
 
 func _process(delta):
-	var now = OS.get_ticks_usec() / 1000000.0
-	var diff =  now - physicsUpdate
-	if physicsTranslation != Vector3.ZERO:
-		self.translation = physicsTranslation + velocity * diff
+	var now = _getTime()
+	var diff =  now - _physicsUpdate
+	if _physicsTranslation != Vector3.ZERO:
+		self.translation = _physicsTranslation + velocity * diff
+
+func _implementMovement(delta):
+	# implement movement here. Ex:
+	#velocity = move_and_slide_with_snap(velocity, Vector3.DOWN, Vector3.UP, true, 1, deg2rad(45), false)
+	pass
