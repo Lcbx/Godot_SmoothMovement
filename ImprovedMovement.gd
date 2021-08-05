@@ -22,7 +22,7 @@ func _physics_process(delta):
 func _process(delta):
 	var now = _getTime()
 	var diff =  now - _physicsUpdate
-	if _physicsTranslation != Vector3.ZERO:
+	if _physicsTranslation != Vector3.ZERO and diff > 0:
 		self.translation = _physicsTranslation + velocity * diff
 
 func _implementMovement(delta):
