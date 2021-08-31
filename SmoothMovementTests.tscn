@@ -20,6 +20,10 @@ func _ready():
 	# center the window
 	var window_size = OS.get_window_size()
 	OS.set_window_position(screen_size*0.5 - window_size*0.5)
+	
+	# start at exact same time, more or less
+	$Improved.translation.x = $Simple.translation.x
+	$Improved.translation.z = $Simple.translation.z
 "
 
 [sub_resource type="GDScript" id=2]
