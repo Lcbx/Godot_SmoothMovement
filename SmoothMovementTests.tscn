@@ -1,4 +1,6 @@
-[gd_scene load_steps=6 format=2]
+[gd_scene load_steps=8 format=2]
+
+[ext_resource path="res://TimestepExtrapolation.gd" type="Script" id=1]
 
 [sub_resource type="GDScript" id=1]
 script/source = "extends Spatial
@@ -7,8 +9,10 @@ script/source = "extends Spatial
 
 func _ready():
 	# to create discrepancy in process / physics
-	Engine.iterations_per_second = 8
-	Engine.target_fps = 60
+	#Engine.iterations_per_second = 20
+	Engine.iterations_per_second = 10
+	#Engine.target_fps = 60
+	#Engine.time_scale = 0.8
 	
 	# take first window
 	OS.current_screen = 0
@@ -20,17 +24,14 @@ func _ready():
 	# center the window
 	var window_size = OS.get_window_size()
 	OS.set_window_position(screen_size*0.5 - window_size*0.5)
-	
-	# start at exact same time, more or less
-	$Improved.translation.x = $Simple.translation.x
-	$Improved.translation.z = $Simple.translation.z
 "
 
 [sub_resource type="GDScript" id=2]
 script/source = "extends KinematicBody
 
 
-var velocity = Vector3.RIGHT * 5.0
+onready var velocity = Vector3.RIGHT * 5.0
+
 func _physics_process(delta):
 		velocity = move_and_slide_with_snap(velocity, Vector3.DOWN, Vector3.UP, true, 1, deg2rad(45), false)
 		
@@ -41,23 +42,36 @@ func _physics_process(delta):
 
 [sub_resource type="CylinderMesh" id=4]
 
-[sub_resource type="GDScript" id=5]
+[sub_resource type="GDScript" id=7]
 script/source = "extends ImprovedKinematicBody
+
 
 func _ready():
 	velocity = Vector3.RIGHT * 5.0
-
-# see ImprovedKinematicBody.gd
+	
 func _implementMovement(delta):
-	velocity = move_and_slide_with_snap(velocity, Vector3.DOWN, Vector3.UP, true, 1, deg2rad(45), false)
-	print(\"improved \", self.translation)
+		velocity = move_and_slide_with_snap(velocity, Vector3.DOWN, Vector3.UP, true, 1, deg2rad(45), false)
+		
+		print(\"improved \", self.translation)
+"
+
+[sub_resource type="GDScript" id=6]
+script/source = "extends KinematicBody
+
+
+onready var velocity = Vector3.RIGHT * 5.0
+
+func _physics_process(delta):
+		velocity = move_and_slide_with_snap(velocity, Vector3.DOWN, Vector3.UP, true, 1, deg2rad(45), false)
+		
+		print(\"improved2 \", self.translation)
 "
 
 [node name="TestScene" type="Spatial"]
 script = SubResource( 1 )
 
 [node name="Simple" type="KinematicBody" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0168197, -0.0147202, 0.00978971 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.1 )
 script = SubResource( 2 )
 
 [node name="CollisionShape" type="CollisionShape" parent="Simple"]
@@ -68,8 +82,8 @@ mesh = SubResource( 4 )
 material/0 = null
 
 [node name="Improved" type="KinematicBody" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3.3, 0 )
-script = SubResource( 5 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -3, 0.1 )
+script = SubResource( 7 )
 
 [node name="CollisionShape" type="CollisionShape" parent="Improved"]
 shape = SubResource( 3 )
@@ -78,11 +92,27 @@ shape = SubResource( 3 )
 mesh = SubResource( 4 )
 material/0 = null
 
+[node name="Improved2" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -6, 0.1 )
+script = SubResource( 6 )
+
+[node name="TimestepExtrapolation" type="Spatial" parent="Improved2"]
+script = ExtResource( 1 )
+maxLinearDist = 1.0
+
+[node name="MeshInstance" type="MeshInstance" parent="Improved2/TimestepExtrapolation"]
+mesh = SubResource( 4 )
+skeleton = NodePath("../..")
+material/0 = null
+
+[node name="CollisionShape" type="CollisionShape" parent="Improved2"]
+shape = SubResource( 3 )
+
 [node name="Camera" type="Camera" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 12.3622, 0, 10.2771 )
+transform = Transform( 1, 0, 0, 0, 0.998668, 0.0516039, 0, -0.0516039, 0.998668, 12.3622, -1.39421, 10.2771 )
 
 [node name="obstacle1" type="KinematicBody" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19.41, -3.31472, -0.719982 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19, 0, 0 )
 
 [node name="CollisionShape" type="CollisionShape" parent="obstacle1"]
 shape = SubResource( 3 )
@@ -92,11 +122,21 @@ mesh = SubResource( 4 )
 material/0 = null
 
 [node name="obstacle2" type="KinematicBody" parent="."]
-transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19.41, -0.0147202, -0.719982 )
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19, -3, 0 )
 
 [node name="CollisionShape" type="CollisionShape" parent="obstacle2"]
 shape = SubResource( 3 )
 
 [node name="MeshInstance" type="MeshInstance" parent="obstacle2"]
+mesh = SubResource( 4 )
+material/0 = null
+
+[node name="obstacle3" type="KinematicBody" parent="."]
+transform = Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 19, -6, 0 )
+
+[node name="CollisionShape" type="CollisionShape" parent="obstacle3"]
+shape = SubResource( 3 )
+
+[node name="MeshInstance" type="MeshInstance" parent="obstacle3"]
 mesh = SubResource( 4 )
 material/0 = null
